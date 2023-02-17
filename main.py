@@ -7,12 +7,17 @@ bot = telebot.TeleBot(BOT_API_TOKEN)
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, 'Start command')
+    msg = bot.send_message(message.chat.id, 'Введите преподавателя, расписание которого хотите посмотреть')
+    bot.register_next_step_handler(msg, prepod)
 
 @bot.message_handler(commands=['help'])
 def start(message):
     bot.send_message(message.chat.id, 'Help command')
 
+def prepod(message):
+    global prname
+    prname=message.text
+    bot.send_message(message.chat.id, 'расписание')
 
 
 

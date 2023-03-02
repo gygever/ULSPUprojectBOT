@@ -11,13 +11,17 @@ MESS_MAX_LENGTH = 4096
 @bot.message_handler(commands=['start'])
 def start(message):
     msg = bot.send_message(message.chat.id, 'Введите преподавателя, расписание которого хотите посмотреть')
+    bot.register_next_step_handler(msg, day)
+
+def day(message):
+    global prname
+    prname = message.text
+    msg = bot.send_message(message.chat.id, 'Введите день, на который хотите увидеть расписание в форме ГГГГ-ММ-ДД')
     bot.register_next_step_handler(msg, prepod)
 
-
 def prepod(message):
-    global prname
-    prname=message.text
-    raspis=schedule(prname)
+    day = message.text
+    raspis=schedule(prname, day)
     for x in range(0, len(raspis), MESS_MAX_LENGTH):
         shraspis = raspis[x: x + MESS_MAX_LENGTH]
         bot.send_message(message.chat.id, shraspis)

@@ -24,7 +24,7 @@ def prepod(message):
     raspis=schedule(prname, day)
     for x in range(0, len(raspis), MESS_MAX_LENGTH):
         shraspis = raspis[x: x + MESS_MAX_LENGTH]
-        bot.send_message(message.chat.id, shraspis)
+        bot.send_message(message.chat.id, shraspis, parse_mode='Markdown')
 
 
 @bot.message_handler(commands=['help'])

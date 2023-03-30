@@ -45,7 +45,7 @@ def SplitTitle(rlist):
 def FormatTitle(rlist):
     rlist=SplitTitle((rlist))
     for item in rlist:
-        item['title'] = '*Дисциплина:* '+ item['title'][0] + ' \n*Тип занятия:* '+ item['title'][1] + ' \n*Группа:*' + item['title'][2] + ' \n*Аудитория:* ' + item['title'][3]
+        item['title'] = '*Дисциплина:* '+ item['title'][0] + ' \n*Тип занятия:* '+ item['title'][1] + ' \n*Группа:*     ' + item['title'][2] + ' \n*Аудитория:* ' + item['title'][3]
     return rlist
 
 def teacher(prname):
@@ -58,15 +58,30 @@ def teacher(prname):
     if tecsp:
         return None
 
+def StrReversDate(date):
+    date=date.split('.')
+    date[0], date[2] = '20'+date[2], date[0]
+    return date[0]+'-'+date[1]+'-'+date[2]
+
+def DateReversdate(date):
+    date = str(date)
+    date = date.split('-')
+    date[0], date[2] = date[2], date[0]
+    return date[0] + '.' + date[1] + '.' + date[2]
+
 def schedule(prname, day):
     prname = teacher(prname)
     if prname:
-        raspis = 'Расписание на ' + day + ' ' + dayweek(day) + '\n'
+        if type(day) == str:
+            raspis = 'Расписание на ' + day + ' ' + dayweek(StrReversDate(day)) + ':\n\n'
+            rawraspis = ListSchedule(prname, StrReversDate(day))
+        elif type(day) == datetime.date:
+            raspis = 'Расписание на ' + DateReversdate(day) + ' ' + dayweek(str(day)) + ':\n\n'
+            rawraspis = ListSchedule(prname, str(day))
         para = 1
         prodpara = datetime.timedelta(hours=1, minutes=30)
         lasttime = datetime.timedelta(hours=8, minutes=30)
         nopara = ''
-        rawraspis = ListSchedule(prname, day)
         rawraspis = FormatTitle(rawraspis)
         for item in rawraspis:
             startt = datetime.datetime.strptime(item['start'], "%Y-%m-%dT%H:%M:%S.%fZ").time()
@@ -84,10 +99,18 @@ def schedule(prname, day):
                 raspis = raspis + str(para) + ' пара \n' + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(
                     endtime)[:-3] + '\n \n'
                 lasttime = starttime
-        if len(raspis) == 0:
+        if len(raspis) <= 37:
             raspis = f'У {prname.replace("%20", " ")} нет в занятий в этот день.'
             return raspis
         else:
             return raspis
     else:
         return 'На данного преподавателя нет расписания. Убедитесь, что правильно ввели фамилию и инициалы преподавателя. '
+
+def TodayRaspis(prname):
+    day = datetime.datetime.today().date()
+    return schedule(prname, day)
+
+def TomorrowRaspis(prname):
+    day = datetime.date.today() + datetime.timedelta(days=1)
+    return schedule(prname, day)

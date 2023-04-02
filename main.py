@@ -1,4 +1,4 @@
-# main file 
+# main file
 import telebot
 from config.config import BOT_API_TOKEN
 from utils.workjson import schedule, TomorrowRaspis, TodayRaspis, teacher, ThisWeek, ThisWeekSchedule, NextWeekSchedule, MyWeekSchedule
@@ -39,15 +39,27 @@ def ChoiseDay(message):
     global prname
     msg = message.text
     if msg == 'на сегодня':
-        raspis = TodayRaspis(prname)
-        for x in range(0, len(raspis), MESS_MAX_LENGTH):
-            shraspis = raspis[x: x + MESS_MAX_LENGTH]
-            bot.send_message(message.chat.id, shraspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
+        listRaspis = TodayRaspis(prname)
+        raspis = listRaspis[0]
+        for x in range(1, len(listRaspis)):
+            if len(raspis + listRaspis[x]) < MESS_MAX_LENGTH:
+                raspis += listRaspis[x]
+            else:
+                bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
+                raspis = listRaspis[x]
+        if raspis:
+            bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
     elif msg == 'на завтра':
-        raspis = TomorrowRaspis(prname)
-        for x in range(0, len(raspis), MESS_MAX_LENGTH):
-            shraspis = raspis[x: x + MESS_MAX_LENGTH]
-            bot.send_message(message.chat.id, shraspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
+        listRaspis = TomorrowRaspis(prname)
+        raspis = listRaspis[0]
+        for x in range(1, len(listRaspis)):
+            if len(raspis + listRaspis[x]) < MESS_MAX_LENGTH:
+                raspis += listRaspis[x]
+            else:
+                bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
+                raspis = listRaspis[x]
+        if raspis:
+            bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
     elif msg == 'ввести самому':
         msg = bot.send_message(message.chat.id, 'Введите день, на который хотите увидеть расписание в форме ДД.ММ.ГГ', reply_markup=telebot.types.ReplyKeyboardRemove())
         bot.register_next_step_handler(msg, prepod)
@@ -55,10 +67,16 @@ def ChoiseDay(message):
 
 def prepod(message):
     day = message.text
-    raspis = schedule(prname, day)
-    for x in range(0, len(raspis), MESS_MAX_LENGTH):
-        shraspis = raspis[x: x + MESS_MAX_LENGTH]
-        bot.send_message(message.chat.id, shraspis, parse_mode='Markdown')
+    listRaspis = schedule(prname, day)
+    raspis = listRaspis[0]
+    for x in range(1, len(listRaspis)):
+        if len(raspis + listRaspis[x]) < MESS_MAX_LENGTH:
+            raspis += listRaspis[x]
+        else:
+            bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
+            raspis = listRaspis[x]
+    if raspis:
+        bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
 
 
 def ChoiseWeek(message):

@@ -79,10 +79,10 @@ def DateReversdate(date):
 
 def schedule(prname, day):
     if type(day) == str:
-        raspis = 'Расписание на ' + day + ' ' + dayweek(StrReversDate(day)) + ':\n\n'
+        raspis = ['Расписание на ' + day + ' ' + dayweek(StrReversDate(day)) + ':\n\n']
         rawraspis = ListSchedule(prname, StrReversDate(day))
     elif type(day) == datetime.date:
-        raspis = 'Расписание на ' + DateReversdate(day) + ' ' + dayweek(str(day)) + ':\n\n'
+        raspis = ['Расписание на ' + DateReversdate(day) + ' ' + dayweek(str(day)) + ':\n\n']
         rawraspis = ListSchedule(prname, str(day))
         day = DateReversdate(day)
     para = 1
@@ -96,17 +96,17 @@ def schedule(prname, day):
         endt = datetime.datetime.strptime(item['end'], "%Y-%m-%dT%H:%M:%S.%fZ").time()
         endtime = datetime.timedelta(hours=endt.hour, minutes=endt.minute, seconds=endt.second, microseconds=endt.microsecond) + datetime.timedelta(hours=4, minutes=0, seconds=0, microseconds=0)
         if starttime == lasttime:
-            raspis = raspis + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(endtime)[:-3] + '\n \n'
+            raspis.append(item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(endtime)[:-3] + '\n \n')
         else:
             nopara = starttime - lasttime
             if nopara // prodpara > 4:
                 para = para + nopara // prodpara - 1
             else:
                 para = para + nopara // prodpara
-            raspis = raspis + str(para) + ' пара \n' + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(endtime)[:-3] + '\n \n'
+            raspis.append(str(para) + ' пара \n' + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(endtime)[:-3] + '\n \n')
             lasttime = starttime
-    if len(raspis) <= 38:
-        return f'У {prname.replace("%20", " ")} нет в занятий в {day} \n\n'
+    if len(raspis) <= 1:
+        return [f'У {prname.replace("%20", " ")} нет в занятий в {day} \n\n']
     else:
         return raspis
 
@@ -136,10 +136,11 @@ def ThisWeek():
 
 
 def ThisWeekSchedule(prname):
-    raspis=[]
-    week=WeekDateList(ThisWeek()[1], ThisWeek()[0])
-    for i  in week:
-        raspis.append(schedule(prname, i))
+    raspis = []
+    week = WeekDateList(ThisWeek()[1], ThisWeek()[0])
+    for i in week:
+        for x in schedule(prname, i):
+            raspis.append(x)
     return raspis
 
 
@@ -151,12 +152,15 @@ def NextWeekSchedule(prname):
     raspis = []
     week = WeekDateList(NextWeek()[1], NextWeek()[0])
     for i in week:
-        raspis.append(schedule(prname, i))
+        for x in schedule(prname, i):
+            raspis.append(x)
     return raspis
+
 
 def MyWeekSchedule(prname, nweek):
     raspis = []
     week = WeekDateList(int(nweek), datetime.datetime.today().isocalendar()[0])
     for i in week:
-        raspis.append(schedule(prname, i))
+        for x in schedule(prname, i):
+            raspis.append(x)
     return raspis

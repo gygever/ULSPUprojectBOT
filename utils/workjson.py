@@ -1,6 +1,7 @@
 import json, datetime
 from requests import get
 
+
 def dayweek(day):
     day = datetime.datetime.strptime(day, "%Y-%m-%d").date()
     day=day.weekday()
@@ -19,6 +20,7 @@ def dayweek(day):
     elif day==6:
         return ' (воскресенье)'
 
+
 def ListSchedule(prname, day):
     prname = prname.replace(' ', '%20')
     day = datetime.datetime.strptime(day, "%Y-%m-%d").date()
@@ -31,6 +33,7 @@ def ListSchedule(prname, day):
             rawraspis.append(item)
     return sorted(rawraspis, key=lambda x: datetime.datetime.strptime(x['start'], "%Y-%m-%dT%H:%M:%S.%fZ").time())
 
+
 def SplitTitle(rlist):
     for item in rlist:
         hlp1=item['title'].split(' - ')
@@ -42,11 +45,13 @@ def SplitTitle(rlist):
         item['title']=hlp1
     return rlist
 
+
 def FormatTitle(rlist):
     rlist=SplitTitle((rlist))
     for item in rlist:
-        item['title'] = '*Дисциплина:* '+ item['title'][0] + ' \n*Тип занятия:* '+ item['title'][1] + ' \n*Группа:*     ' + item['title'][2] + ' \n*Аудитория:* ' + item['title'][3]
+        item['title'] = '*Дисциплина:* '+ item['title'][0] + ' \n*Тип занятия:* '+ item['title'][1] + ' \n*Группа:* ' + item['title'][2] + ' \n*Аудитория:* ' + item['title'][3]
     return rlist
+
 
 def teacher(prname):
     req = get('https://raspi.ulspu.ru/json/dashboard/teachers')
@@ -58,10 +63,12 @@ def teacher(prname):
     if tecsp:
         return None
 
+
 def StrReversDate(date):
     date=date.split('.')
     date[0], date[2] = '20'+date[2], date[0]
     return date[0]+'-'+date[1]+'-'+date[2]
+
 
 def DateReversdate(date):
     date = str(date)
@@ -69,48 +76,87 @@ def DateReversdate(date):
     date[0], date[2] = date[2], date[0]
     return date[0] + '.' + date[1] + '.' + date[2]
 
+
 def schedule(prname, day):
-    prname = teacher(prname)
-    if prname:
-        if type(day) == str:
-            raspis = 'Расписание на ' + day + ' ' + dayweek(StrReversDate(day)) + ':\n\n'
-            rawraspis = ListSchedule(prname, StrReversDate(day))
-        elif type(day) == datetime.date:
-            raspis = 'Расписание на ' + DateReversdate(day) + ' ' + dayweek(str(day)) + ':\n\n'
-            rawraspis = ListSchedule(prname, str(day))
-        para = 1
-        prodpara = datetime.timedelta(hours=1, minutes=30)
-        lasttime = datetime.timedelta(hours=8, minutes=30)
-        nopara = ''
-        rawraspis = FormatTitle(rawraspis)
-        for item in rawraspis:
-            startt = datetime.datetime.strptime(item['start'], "%Y-%m-%dT%H:%M:%S.%fZ").time()
-            starttime = datetime.timedelta(hours=startt.hour, minutes=startt.minute, seconds=startt.second, microseconds=startt.microsecond) + datetime.timedelta(hours=4, minutes=0, seconds=0, microseconds=0)
-            endt = datetime.datetime.strptime(item['end'], "%Y-%m-%dT%H:%M:%S.%fZ").time()
-            endtime = datetime.timedelta(hours=endt.hour, minutes=endt.minute, seconds=endt.second, microseconds=endt.microsecond) + datetime.timedelta(hours=4, minutes=0, seconds=0, microseconds=0)
-            if starttime == lasttime:
-                raspis = raspis + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(endtime)[:-3] + '\n \n'
-            else:
-                nopara = starttime - lasttime
-                if nopara // prodpara > 4:
-                    para = para + nopara // prodpara - 1
-                else:
-                    para = para + nopara // prodpara
-                raspis = raspis + str(para) + ' пара \n' + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(
-                    endtime)[:-3] + '\n \n'
-                lasttime = starttime
-        if len(raspis) <= 37:
-            raspis = f'У {prname.replace("%20", " ")} нет в занятий в этот день.'
-            return raspis
+    if type(day) == str:
+        raspis = 'Расписание на ' + day + ' ' + dayweek(StrReversDate(day)) + ':\n\n'
+        rawraspis = ListSchedule(prname, StrReversDate(day))
+    elif type(day) == datetime.date:
+        raspis = 'Расписание на ' + DateReversdate(day) + ' ' + dayweek(str(day)) + ':\n\n'
+        rawraspis = ListSchedule(prname, str(day))
+        day = DateReversdate(day)
+    para = 1
+    prodpara = datetime.timedelta(hours=1, minutes=30)
+    lasttime = datetime.timedelta(hours=8, minutes=30)
+    nopara = ''
+    rawraspis = FormatTitle(rawraspis)
+    for item in rawraspis:
+        startt = datetime.datetime.strptime(item['start'], "%Y-%m-%dT%H:%M:%S.%fZ").time()
+        starttime = datetime.timedelta(hours=startt.hour, minutes=startt.minute, seconds=startt.second, microseconds=startt.microsecond) + datetime.timedelta(hours=4, minutes=0, seconds=0, microseconds=0)
+        endt = datetime.datetime.strptime(item['end'], "%Y-%m-%dT%H:%M:%S.%fZ").time()
+        endtime = datetime.timedelta(hours=endt.hour, minutes=endt.minute, seconds=endt.second, microseconds=endt.microsecond) + datetime.timedelta(hours=4, minutes=0, seconds=0, microseconds=0)
+        if starttime == lasttime:
+            raspis = raspis + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(endtime)[:-3] + '\n \n'
         else:
-            return raspis
+            nopara = starttime - lasttime
+            if nopara // prodpara > 4:
+                para = para + nopara // prodpara - 1
+            else:
+                para = para + nopara // prodpara
+            raspis = raspis + str(para) + ' пара \n' + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(endtime)[:-3] + '\n \n'
+            lasttime = starttime
+    if len(raspis) <= 38:
+        return f'У {prname.replace("%20", " ")} нет в занятий в {day} \n\n'
     else:
-        return 'На данного преподавателя нет расписания. Убедитесь, что правильно ввели фамилию и инициалы преподавателя. '
+        return raspis
+
 
 def TodayRaspis(prname):
     day = datetime.datetime.today().date()
     return schedule(prname, day)
 
+
 def TomorrowRaspis(prname):
     day = datetime.date.today() + datetime.timedelta(days=1)
     return schedule(prname, day)
+
+
+def WeekDateList(nweek, nyear):
+    nweek = str(nyear)+'-W'+str(nweek)
+    weekDay = datetime.datetime.strptime(nweek + '-1', "%Y-W%W-%w").date()
+    weekList = [weekDay]
+    for i in range(1, 6):
+        weekDay += datetime.timedelta(days=1)
+        weekList.append(weekDay)
+    return weekList
+
+
+def ThisWeek():
+    return [datetime.datetime.today().isocalendar()[0], datetime.datetime.today().isocalendar()[1]]
+
+
+def ThisWeekSchedule(prname):
+    raspis=[]
+    week=WeekDateList(ThisWeek()[1], ThisWeek()[0])
+    for i  in week:
+        raspis.append(schedule(prname, i))
+    return raspis
+
+
+def NextWeek():
+    return [(datetime.datetime.today()+datetime.timedelta(weeks=1)).isocalendar()[0], (datetime.datetime.today()+datetime.timedelta(weeks=1)).isocalendar()[1]]
+
+
+def NextWeekSchedule(prname):
+    raspis = []
+    week = WeekDateList(NextWeek()[1], NextWeek()[0])
+    for i in week:
+        raspis.append(schedule(prname, i))
+    return raspis
+
+def MyWeekSchedule(prname, nweek):
+    raspis = []
+    week = WeekDateList(int(nweek), datetime.datetime.today().isocalendar()[0])
+    for i in week:
+        raspis.append(schedule(prname, i))
+    return raspis

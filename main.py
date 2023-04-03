@@ -1,8 +1,8 @@
 # main file
 import telebot
 from config.config import BOT_API_TOKEN
-from utils.workjson import schedule, TomorrowRaspis, TodayRaspis, teacher, ThisWeek, ThisWeekSchedule, NextWeekSchedule, MyWeekSchedule
-from utils.keyboard import ChoisButtons, DaysButtons, WeekButtons
+from utils.workjson import schedule, tomorrow_raspis, today_raspis, teacher, this_week, this_week_schedule, next_week_schedule, my_week_schedule
+from utils.keyboard import chois_buttons, week_buttons, days_buttons
 
 
 bot = telebot.TeleBot(BOT_API_TOKEN)
@@ -12,34 +12,34 @@ MESS_MAX_LENGTH = 3000
 @bot.message_handler(commands=['start'])
 def start(message):
     msg = bot.send_message(message.chat.id, 'Введите преподавателя, расписание которого хотите посмотреть')
-    bot.register_next_step_handler(msg, ChoiseDate)
+    bot.register_next_step_handler(msg, choise_date)
 
 
-def ChoiseDate(messge):
+def choise_date(messge):
     global prname
     prname = teacher(messge.text)
     if prname:
-        msg = bot.send_message(messge.chat.id, 'Выберите временной промежуток', reply_markup=ChoisButtons())
-        bot.register_next_step_handler(msg, ChoiseDate2)
+        msg = bot.send_message(messge.chat.id, 'Выберите временной промежуток', reply_markup=chois_buttons())
+        bot.register_next_step_handler(msg, choise_date2)
     else:
         bot.send_message(messge.chat.id, 'На данного преподавателя нет расписания. Убедитесь, что правильно ввели фамилию и инициалы преподавателя.')
 
 
-def ChoiseDate2(messge):
+def choise_date2(messge):
     msg = messge.text
     if msg =='на день':
-        msg = bot.send_message(messge.chat.id, 'Выберите на какой день', reply_markup=DaysButtons())
-        bot.register_next_step_handler(msg, ChoiseDay)
+        msg = bot.send_message(messge.chat.id, 'Выберите на какой день', reply_markup=days_buttons())
+        bot.register_next_step_handler(msg, choise_day)
     elif msg == 'на неделю':
-        msg = bot.send_message(messge.chat.id, 'Выберите на какую неделю', reply_markup=WeekButtons())
-        bot.register_next_step_handler(msg, ChoiseWeek)
+        msg = bot.send_message(messge.chat.id, 'Выберите на какую неделю', reply_markup=week_buttons())
+        bot.register_next_step_handler(msg, choise_week)
 
 
-def ChoiseDay(message):
+def choise_day(message):
     global prname
     msg = message.text
     if msg == 'на сегодня':
-        listRaspis = TodayRaspis(prname)
+        listRaspis = today_raspis(prname)
         raspis = listRaspis[0]
         for x in range(1, len(listRaspis)):
             if len(raspis + listRaspis[x]) < MESS_MAX_LENGTH:
@@ -50,7 +50,7 @@ def ChoiseDay(message):
         if raspis:
             bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
     elif msg == 'на завтра':
-        listRaspis = TomorrowRaspis(prname)
+        listRaspis = tomorrow_raspis(prname)
         raspis = listRaspis[0]
         for x in range(1, len(listRaspis)):
             if len(raspis + listRaspis[x]) < MESS_MAX_LENGTH:
@@ -79,11 +79,11 @@ def prepod(message):
         bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
 
 
-def ChoiseWeek(message):
+def choise_week(message):
     global prname
     msg = message.text
     if msg == 'на эту неделю':
-        listRaspis = ThisWeekSchedule(prname)
+        listRaspis = this_week_schedule(prname)
         raspis = listRaspis[0]
         for x in range(1, len(listRaspis)):
             if len(raspis + listRaspis[x]) < MESS_MAX_LENGTH:
@@ -94,7 +94,7 @@ def ChoiseWeek(message):
         if raspis:
             bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
     elif msg == 'на следующую неделю':
-        listRaspis=NextWeekSchedule(prname)
+        listRaspis=next_week_schedule(prname)
         raspis = listRaspis[0]
         for x in range(1, len(listRaspis)):
             if len(raspis + listRaspis[x]) < MESS_MAX_LENGTH:
@@ -105,12 +105,12 @@ def ChoiseWeek(message):
         if raspis:
             bot.send_message(message.chat.id, raspis, parse_mode='Markdown',reply_markup=telebot.types.ReplyKeyboardRemove())
     elif msg == 'ввести номер недели самому':
-        message = bot.send_message(message.chat.id, f'Введите номер недели (сейчас идет {ThisWeek()[1]} неделя)', reply_markup=telebot.types.ReplyKeyboardRemove())
-        bot.register_next_step_handler(message, CastomWeenSchedule)
+        message = bot.send_message(message.chat.id, f'Введите номер недели (сейчас идет {this_week()[1]} неделя)', reply_markup=telebot.types.ReplyKeyboardRemove())
+        bot.register_next_step_handler(message, castom_ween_schedule)
 
 
-def CastomWeenSchedule(message):
-    listRaspis = MyWeekSchedule(prname, message.text)
+def castom_ween_schedule(message):
+    listRaspis = my_week_schedule(prname, message.text)
     raspis = listRaspis[0]
     for x in range(1, len(listRaspis)):
         if len(raspis + listRaspis[x]) < MESS_MAX_LENGTH:

@@ -79,11 +79,13 @@ def date_revers_date(date):
 
 def schedule(prname, day):
     if type(day) == str:
-        raspis = ['Расписание на ' + day + ' ' + dayweek(str_revers_date(day)) + ':\n\n']
+        raspis = ['*Расписание на ' + day + ' ' + dayweek(str_revers_date(day)) + ':*\n\n']
         rawraspis = list_schedule(prname, str_revers_date(day))
+        date = str_revers_date(day)
     elif type(day) == datetime.date:
-        raspis = ['Расписание на ' + date_revers_date(day) + ' ' + dayweek(str(day)) + ':\n\n']
+        raspis = ['*Расписание на ' + date_revers_date(day) + ' ' + dayweek(str(day)) + ':*\n\n']
         rawraspis = list_schedule(prname, str(day))
+        date = str(day)
         day = date_revers_date(day)
     para = 1
     prodpara = datetime.timedelta(hours=1, minutes=30)
@@ -103,10 +105,10 @@ def schedule(prname, day):
                 para = para + nopara // prodpara - 1
             else:
                 para = para + nopara // prodpara
-            raspis.append(str(para) + ' пара \n' + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(endtime)[:-3] + '\n \n')
+            raspis.append('*'+str(para) + ' пара* \n' + item['title'] + ' \n*Время:* ' + str(starttime)[:-3] + '-' + str(endtime)[:-3] + '\n \n')
             lasttime = starttime
     if len(raspis) <= 1:
-        return [f'У {prname.replace("%20", " ")} нет в занятий в {day} \n\n']
+        return [f'У {prname.replace("%20", " ")} нет в занятий в {day}{dayweek(date)}\n\n']
     else:
         return raspis
 
@@ -151,15 +153,6 @@ def next_week():
 def next_week_schedule(prname):
     raspis = []
     week = week_date_list(next_week()[1], next_week()[0])
-    for i in week:
-        for x in schedule(prname, i):
-            raspis.append(x)
-    return raspis
-
-
-def my_week_schedule(prname, nweek):
-    raspis = []
-    week = week_date_list(int(nweek), datetime.datetime.today().isocalendar()[0])
     for i in week:
         for x in schedule(prname, i):
             raspis.append(x)

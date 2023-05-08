@@ -64,12 +64,6 @@ def teacher(prname):
         return None
 
 
-def str_revers_date(date):
-    date=date.split('.')
-    date[0], date[2] = '20'+date[2], date[0]
-    return date[0]+'-'+date[1]+'-'+date[2]
-
-
 def date_revers_date(date):
     date = str(date)
     date = date.split('-')
@@ -78,15 +72,10 @@ def date_revers_date(date):
 
 
 def schedule(prname, day):
-    if type(day) == str:
-        raspis = ['*Расписание на ' + day + ' ' + dayweek(str_revers_date(day)) + ':*\n\n']
-        rawraspis = list_schedule(prname, str_revers_date(day))
-        date = str_revers_date(day)
-    elif type(day) == datetime.date:
-        raspis = ['*Расписание на ' + date_revers_date(day) + ' ' + dayweek(str(day)) + ':*\n\n']
-        rawraspis = list_schedule(prname, str(day))
-        date = str(day)
-        day = date_revers_date(day)
+    raspis = ['*Расписание на ' + date_revers_date(day) + ' ' + dayweek(str(day)) + ':*\n\n']
+    rawraspis = list_schedule(prname, str(day))
+    date = str(day)
+    day = date_revers_date(day)
     para = 1
     prodpara = datetime.timedelta(hours=1, minutes=30)
     lasttime = datetime.timedelta(hours=8, minutes=30)

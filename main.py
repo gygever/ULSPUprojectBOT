@@ -15,12 +15,10 @@ def send_schedule(listRaspis, message):
         if len(raspis + listRaspis[x]) < MESS_MAX_LENGTH:
             raspis += listRaspis[x]
         else:
-            bot.send_message(message.chat.id, raspis, parse_mode='Markdown',
-                             reply_markup=telebot.types.ReplyKeyboardRemove())
+            bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
             raspis = listRaspis[x]
     if raspis:
-        bot.send_message(message.chat.id, raspis, parse_mode='Markdown',
-                         reply_markup=telebot.types.ReplyKeyboardRemove())
+        bot.send_message(message.chat.id, raspis, parse_mode='Markdown', reply_markup=telebot.types.ReplyKeyboardRemove())
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -51,7 +49,7 @@ def prepod_schedule(message):
         listRaspis = this_week_schedule(prname)
         send_schedule(listRaspis, message)
     elif msg == 'на следующую неделю':
-        listRaspis=next_week_schedule(prname)
+        listRaspis = next_week_schedule(prname)
         send_schedule(listRaspis, message)
 
 @bot.message_handler(commands=['help'])

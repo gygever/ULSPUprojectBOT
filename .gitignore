@@ -136,3 +136,6 @@ dmypy.json
 
 #Docker
 .Dockerfile.swp
+
+#Visual Studio
+.vs/
